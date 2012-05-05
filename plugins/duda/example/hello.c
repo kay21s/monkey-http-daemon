@@ -1,8 +1,9 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 
 #include "webservice.h"
-#include "packages/json/json.h"
-#include "packages/sha1/sha1.h"
+#include "../packages/json/json.h"
+#include "../packages/sha1/sha1.h"
+#include "../packages/websocket/websocket.h"
 
 #define INCORRECT_PARAMETERS "Incorrect Parameters\n"
 #define FORMATTED_OUT "==Formatted JSON output==\n"
@@ -80,6 +81,28 @@ void cb_sha1_test(duda_request_t *dr)
     response->body_write(dr, "Raw: hello world!<br>Encoded: ", 30);
     response->body_write(dr, (char *)encoded, SHA_DIGEST_LENGTH);
     response->end(dr, cb_end);
+}
+
+void cb_websocket_test(duda_request_t *dr)
+{
+    int ret;
+    unsigned char *data;
+    uint64_t data_len;
+    
+    ret = websocket->handle_request(NULL, dr->cs, dr->sr);
+    if (ret == MK_WS_NEW_REQUEST) {
+        return;
+    } else if (ret == MK_WS_ERROR) {
+        return;
+    }
+
+    data_len = websocket->read_data(dr->cs->socket, &data);
+
+    /*Just echo it*/
+    ret = websocket->send_data(dr->cs->socket, 1, 0, 0, 0, WS_FRAME_TEXT, 
+            0, data_len, NULL, data);
+
+    websocket->end_request(dr->cs->socket);
 }
 
 void cb_json_first(duda_request_t *dr)
@@ -245,6 +268,7 @@ int duda_init(struct duda_api_objects *api)
 
     duda_load_package(json, "json");
     duda_load_package(sha1, "sha1");
+    duda_load_package(websocket, "websocket");
 
     /* An empty global variable */
     duda_global_init(my_data_empty, NULL);
@@ -255,7 +279,7 @@ int duda_init(struct duda_api_objects *api)
     /* archive interface */
     if_system = map->interface_new("examples");
 
-    /* URI: /hello/examples/hello_word */
+    /* URI: /hello/examples/hello_world */
     method = map->method_new("hello_world", "cb_hello_world", 0);
     map->interface_add_method(method, if_system);
 
@@ -266,6 +290,11 @@ int duda_init(struct duda_api_objects *api)
     /* URI: /hello/examples/json_first */
     method = map->method_new("json_first", "cb_json_first", 0);
     map->interface_add_method(method, if_system);
+
+    /* URI: /hello/examples/websocket_test */
+    method = map->method_new("websocket_test", "cb_websocket_test", 0);
+    map->interface_add_method(method, if_system);
+    websocket->init();
 
     /* URI: /hello/examples/json_second/<action>/<format>
      * action: create/parse
