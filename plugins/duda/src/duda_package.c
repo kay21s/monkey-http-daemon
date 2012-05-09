@@ -23,8 +23,10 @@
 #include "duda.h"
 #include "duda_conf.h"
 #include "duda_package.h"
+#include "duda_api.h"
 
-duda_package_t *duda_package_load(const char *pkgname)
+//duda_package_t *duda_package_load(const char *pkgname)
+duda_package_t *duda_package_load(const char *pkgname, struct duda_api_objects *api)
 {
     int ret;
     char *package = NULL;
@@ -62,7 +64,7 @@ duda_package_t *duda_package_load(const char *pkgname)
         exit(EXIT_FAILURE);
     }
 
-    package_info = init_pkg();
+    package_info = init_pkg(api);
     mk_api->mem_free(package);
 
     return package_info;

@@ -33,5 +33,20 @@ struct duda_package {
 
 typedef struct duda_package duda_package_t;
 
-duda_package_t *duda_package_load(const char *pkgname);
+struct duda_api_objects {
+    struct duda_api_main *duda;
+    struct plugin_api *monkey;
+    struct duda_api_map *map;
+    struct duda_api_msg *msg;
+    struct duda_api_response *response;
+    struct duda_api_debug *debug;
+    struct duda_api_console *console;
+    struct duda_api_global *global;
+    struct duda_api_param *param;
+    struct duda_api_session *session;
+    struct duda_api_cookie *cookie;
+    struct duda_api_xtime *xtime;
+};
+duda_package_t *duda_package_load(const char *, struct duda_api_objects *);
+//duda_package_t *duda_package_load(const char *pkgname);
 #endif

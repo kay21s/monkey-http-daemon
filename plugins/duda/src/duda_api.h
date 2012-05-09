@@ -24,6 +24,7 @@
 
 #include "mk_list.h"
 #include "duda.h"
+#include "duda_api.h"
 #include "duda_global.h"
 #include "duda_cookie.h"
 #include "duda_package.h"
@@ -124,7 +125,7 @@ struct plugin_api *monkey;
 
 /* MAP specific Duda calls */
 struct duda_api_main {
-    duda_package_t *(*package_load) (const char *);
+    duda_package_t *(*package_load) (const char *, struct duda_api_objects *);
 };
 
 /* MAP object: map->x() */
@@ -180,6 +181,7 @@ struct duda_api_global {
  * to the web service when it's loaded, then the webservice.h macros
  * do the dirty job...
  */
+#if 0
 struct duda_api_objects {
     struct duda_api_main *duda;
     struct plugin_api *monkey;
@@ -194,7 +196,7 @@ struct duda_api_objects {
     struct duda_api_cookie *cookie;
     struct duda_api_xtime *xtime;
 };
-
+#endif
 struct duda_api_objects *duda_api_master();
 
 #endif

@@ -24,7 +24,6 @@
 
 #include "webservice.h"
 #include "request.h"
-#include "MKPlugin.h"
 
 /* Create a ws_request node */
 struct mk_ws_request *mk_ws_request_create(int socket_fd,
@@ -33,7 +32,7 @@ struct mk_ws_request *mk_ws_request_create(int socket_fd,
 {
     struct mk_ws_request *new;
 
-    new = mk_api->mem_alloc(sizeof(struct mk_ws_request));
+    new = monkey->mem_alloc(sizeof(struct mk_ws_request));
     new->socket_fd = socket_fd;
     new->cs = cs;
     new->sr = sr;
@@ -127,7 +126,7 @@ int mk_ws_request_delete(int socket)
         
         if (wr_node->socket_fd == socket) {
             mk_list_del(wr_head);
-            mk_api->mem_free(wr_node);
+            monkey->mem_free(wr_node);
             pthread_setspecific(_mkp_data, wr_list);
             return 0;
         }
@@ -144,7 +143,7 @@ void mk_ws_request_init()
 {
     struct mk_list *ws_request_list;
 
-    ws_request_list = monkey->mem_alloc(sizeof(struct mk_list));
+    ws_request_list = malloc(sizeof(struct mk_list));
     mk_list_init(ws_request_list);
     pthread_setspecific(_mkp_data, ws_request_list);
 }

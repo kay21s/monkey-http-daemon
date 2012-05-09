@@ -23,7 +23,7 @@
 #define MK_WEBSOCKETS_H
 
 #include <stdint.h>
-#include "MKPlugin.h"
+#include "webservice.h"
 
 
 /* GUID is defined by websockets v10 */
@@ -79,14 +79,13 @@ int ws_send_data(int sockfd,
                 unsigned char *frame_masking_key,
                 unsigned char *payload_data);
 
-void ws_init();
+void ws_init(struct duda_api_objects *);
 uint64_t ws_read_data(int sockfd, unsigned char **data);
 void ws_end_request(int sockfd);
 int ws_handle_request(struct plugin *plugin, struct client_session *cs, 
                   struct session_request *sr);
 
 struct duda_api_websocket {
-        void (*init) ();
         uint64_t (*read_data)(int, unsigned char **);
         void (*end_request)(int);
         int (*handle_request) (struct plugin *, struct client_session *, 

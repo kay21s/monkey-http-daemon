@@ -32,7 +32,6 @@ struct duda_api_websocket *get_websocket_api()
     websocket = malloc(sizeof(struct duda_api_websocket));
 
     /* Map API calls */
-    websocket->init = ws_init;
     websocket->handle_request = ws_handle_request;
     websocket->send_data = ws_send_data;
     websocket->read_data = ws_read_data;
@@ -41,8 +40,10 @@ struct duda_api_websocket *get_websocket_api()
     return websocket;
 }
 
-duda_package_t *init_duda_package()
+duda_package_t *init_duda_package(struct duda_api_objects *api)
 {
+    ws_init(api);
+
     duda_package_t *dpkg = malloc(sizeof(duda_package_t));
 
     dpkg->name = "websocket";

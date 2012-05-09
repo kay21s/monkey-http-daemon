@@ -41,6 +41,7 @@
 #include "../base64/base64.h"
 #include "request.h"
 #include "websocket.h"
+#include "webservice.h"
 
 int ws_handler(int socket, struct client_session *cs, struct session_request *sr,
                struct plugin *plugin)
@@ -68,7 +69,7 @@ int ws_handler(int socket, struct client_session *cs, struct session_request *sr
         PLUGIN_TRACE("[FD %i] WebSockets Connection Upgrade", cs->socket);
 
         /* Get upgrade type */
-        row = mk_api->header_get(&sr->headers_toc, WS_HEADER_UPGRADE,
+        row = monkey->header_get(&sr->headers_toc, WS_HEADER_UPGRADE,
                                  sizeof(WS_HEADER_UPGRADE) - 1);
 
         if (strncasecmp(row.data, WS_UPGRADE_WS, sizeof(WS_UPGRADE_WS) - 1) != 0) {
@@ -78,14 +79,14 @@ int ws_handler(int socket, struct client_session *cs, struct session_request *sr
         PLUGIN_TRACE("[FD %i] WebSockets Upgrade to 'websocket'", cs->socket);
 
         /* Validate Sec-WebSocket-Key */
-        ws_key = mk_api->header_get(&sr->headers_toc, WS_HEADER_SEC_WS_KEY,
+        ws_key = monkey->header_get(&sr->headers_toc, WS_HEADER_SEC_WS_KEY,
                                     sizeof(WS_HEADER_SEC_WS_KEY) - 1);
         if (ws_key.data == NULL) {
             PLUGIN_TRACE("[FD %i] WebSockets missing key", cs->socket);
             return MK_WS_ERROR;
         }
         
-        mk_api->event_socket_change_mode(cs->socket, MK_EPOLL_RW, MK_EPOLL_LEVEL_TRIGGERED);
+        monkey->event_socket_change_mode(cs->socket, MK_EPOLL_RW, MK_EPOLL_LEVEL_TRIGGERED);
 
         /* Ok Baby, Handshake time! */
         strncpy(buffer, ws_key.data, ws_key.len);
@@ -115,10 +116,10 @@ int ws_handler(int socket, struct client_session *cs, struct session_request *sr
         sr->headers.connection = -1;
 
         /* Set 'Upgrade: websocket' */
-        mk_api->header_add(sr, WS_RESP_UPGRADE, sizeof(WS_RESP_UPGRADE) - 1);
+        monkey->header_add(sr, WS_RESP_UPGRADE, sizeof(WS_RESP_UPGRADE) - 1);
         
         /* Set 'Connection: upgrade' */
-        mk_api->header_add(sr, WS_RESP_CONNECTION, sizeof(WS_RESP_CONNECTION) - 1);        
+        monkey->header_add(sr, WS_RESP_CONNECTION, sizeof(WS_RESP_CONNECTION) - 1);        
 
         /* Compose accept token */
         len = sizeof(WS_RESP_WS_ACCEPT) - 1;
@@ -128,20 +129,20 @@ int ws_handler(int socket, struct client_session *cs, struct session_request *sr
         accept_token[len] = '\0';
         
         /* Add accept token to response headers */
-        mk_api->header_add(sr, accept_token, len);
+        monkey->header_add(sr, accept_token, len);
 
-        mk_api->header_send(cs->socket, cs, sr);
-        mk_api->socket_cork_flag(cs->socket, TCP_CORK_OFF);
+        monkey->header_send(cs->socket, cs, sr);
+        monkey->socket_cork_flag(cs->socket, TCP_CORK_OFF);
 
         /* Free block used by base64_encode() */
-        mk_api->mem_free(encoded_accept);
+        monkey->mem_free(encoded_accept);
         
         /* Register node in main list */
         wr_node = mk_ws_request_create(socket, cs, sr);
         mk_ws_request_add(wr_node);
 
         /* Register socket with plugin events interface */
-        //mk_api->event_add(cs->socket, MK_EPOLL_RW, plugin, 
+        //monkey->event_add(cs->socket, MK_EPOLL_RW, plugin, 
         //                  cs, sr, MK_EPOLL_LEVEL_TRIGGERED);
         return MK_WS_NEW_REQUEST;
     }
@@ -191,7 +192,7 @@ int ws_send_data(int sockfd,
 
     memcpy(buf + offset, payload_data, payload_len);
 
-    n = mk_api->socket_send(sockfd, buf, offset + payload_len);
+    n = monkey->socket_send(sockfd, buf, offset + payload_len);
     if (n <= 0) {
         return -1;
     }
@@ -213,7 +214,7 @@ uint64_t ws_read_data(int sockfd, unsigned char **data)
     unsigned int masking_key_offset = 0;
     struct mk_ws_request *wr;
 
-    buf = mk_api->mem_alloc(256);
+    buf = monkey->mem_alloc(256);
     memset(buf, '\0', sizeof(buf));
 
     wr = mk_ws_request_get(sockfd);
@@ -223,7 +224,7 @@ uint64_t ws_read_data(int sockfd, unsigned char **data)
     }
 
     /* Read incoming data from Palm socket */
-    n = mk_api->socket_read(sockfd, buf, 256);
+    n = monkey->socket_read(sockfd, buf, 256);
     if (n <= 0) {
         return MK_WS_ERROR;
     }
@@ -262,7 +263,7 @@ uint64_t ws_read_data(int sockfd, unsigned char **data)
 #endif
 
     wr->payload_len = payload_length;
-    wr->payload = mk_api->mem_alloc(256);
+    wr->payload = monkey->mem_alloc(256);
     memset(wr->payload, '\0', sizeof(wr->payload));
 
     if (frame_mask) {
@@ -308,15 +309,16 @@ void ws_end_request(int sockfd)
     if (wr->payload_len == 0 || wr->payload == NULL)
         return;
 
-    mk_api->mem_free(wr->payload);
+    monkey->mem_free(wr->payload);
     wr->payload_len = 0;
 
     return;
 }
 
-void ws_init()
+void ws_init(struct duda_api_objects *api)
 {
     /* Init request list */
+    monkey = api->monkey;
     mk_ws_request_init();
 }
 

@@ -266,9 +266,9 @@ int duda_init(struct duda_api_objects *api)
 
     session->init();
 
-    duda_load_package(json, "json");
-    duda_load_package(sha1, "sha1");
-    duda_load_package(websocket, "websocket");
+    duda_load_package(json, "json", api);
+    duda_load_package(sha1, "sha1", api);
+    duda_load_package(websocket, "websocket", api);
 
     /* An empty global variable */
     duda_global_init(my_data_empty, NULL);
@@ -294,7 +294,6 @@ int duda_init(struct duda_api_objects *api)
     /* URI: /hello/examples/websocket_test */
     method = map->method_new("websocket_test", "cb_websocket_test", 0);
     map->interface_add_method(method, if_system);
-    websocket->init();
 
     /* URI: /hello/examples/json_second/<action>/<format>
      * action: create/parse
