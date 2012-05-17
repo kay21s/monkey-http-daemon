@@ -42,6 +42,7 @@
 #include "request.h"
 #include "websocket.h"
 #include "webservice.h"
+#include "MKPlugin.h"
 
 int ws_handler(int socket, struct client_session *cs, struct session_request *sr,
                struct plugin *plugin)

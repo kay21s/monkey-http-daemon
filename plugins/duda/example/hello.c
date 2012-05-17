@@ -294,6 +294,7 @@ int duda_init(struct duda_api_objects *api)
     /* URI: /hello/examples/websocket_test */
     method = map->method_new("websocket_test", "cb_websocket_test", 0);
     map->interface_add_method(method, if_system);
+    //websocket->init(api);
 
     /* URI: /hello/examples/json_second/<action>/<format>
      * action: create/parse

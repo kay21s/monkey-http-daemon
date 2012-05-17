@@ -100,6 +100,7 @@ struct duda_api_websocket {
                 uint64_t payload_len,
                 unsigned char *frame_masking_key,
                 unsigned char *payload_data);
+                void (*init)();
 };
 
 typedef struct duda_api_websocket websocket_object_t;

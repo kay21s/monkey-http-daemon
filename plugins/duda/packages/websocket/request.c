@@ -22,6 +22,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include "MKPlugin.h"
 #include "webservice.h"
 #include "request.h"
 
@@ -143,7 +144,7 @@ void mk_ws_request_init()
 {
     struct mk_list *ws_request_list;
 
-    ws_request_list = malloc(sizeof(struct mk_list));
+    ws_request_list = monkey->mem_alloc(sizeof(struct mk_list));
     mk_list_init(ws_request_list);
     pthread_setspecific(_mkp_data, ws_request_list);
 }

@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 
-#include "duda_package.h"
 #include "websocket.h"
 
 struct duda_api_websocket *get_websocket_api()
@@ -36,6 +35,7 @@ struct duda_api_websocket *get_websocket_api()
     websocket->send_data = ws_send_data;
     websocket->read_data = ws_read_data;
     websocket->end_request = ws_end_request;
+    websocket->init = ws_init;
 
     return websocket;
 }
