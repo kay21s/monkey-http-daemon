@@ -97,6 +97,9 @@ void cb_websocket_test(duda_request_t *dr)
     }
 
     data_len = websocket->read_data(dr->cs->socket, &data);
+    if (data_len == MK_WS_ERROR) {
+        return;
+    }
 
     /*Just echo it*/
     ret = websocket->send_data(dr->cs->socket, 1, 0, 0, 0, WS_FRAME_TEXT, 
