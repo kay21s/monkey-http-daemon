@@ -42,7 +42,7 @@ struct duda_api_websocket *get_websocket_api()
 
 duda_package_t *init_duda_package(struct duda_api_objects *api)
 {
-    ws_init(api);
+    //ws_init(api);
 
     duda_package_t *dpkg = malloc(sizeof(duda_package_t));
 

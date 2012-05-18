@@ -37,8 +37,8 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
-#include "../sha1/sha1.h"
-#include "../base64/base64.h"
+#include "sha1.h"
+#include "base64.h"
 #include "request.h"
 #include "websocket.h"
 #include "webservice.h"
@@ -316,12 +316,21 @@ void ws_end_request(int sockfd)
     return;
 }
 
-void ws_init(struct duda_api_objects *api)
+void ws_init(struct duda_api_objects *api, struct mk_list *duda_global_dist)
 {
     /* Init request list */
     monkey = api->monkey;
-    mk_ws_request_init();
+    //duda_global_init(websocket_request_list, mk_ws_request_init);
+    //duda_global_init(websocket_request_list, NULL);
+    pthread_key_create(&websocket_request_list.key, NULL);                           
+    websocket_request_list.callback = mk_ws_request_init;                                            
+    mk_list_add(&websocket_request_list._head, duda_global_dist);                  
 }
+/*
+void *ws_thctx_callback()
+{
+    return mk_ws_request_init();
+}*/
 
 int ws_handle_request(struct plugin *plugin, struct client_session *cs, 
                   struct session_request *sr)

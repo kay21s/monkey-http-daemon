@@ -24,6 +24,7 @@
 
 #include "MKPlugin.h"
 #include "webservice.h"
+#include "websocket.h"
 #include "request.h"
 
 /* Create a ws_request node */
@@ -49,13 +50,13 @@ void mk_ws_request_add(struct mk_ws_request *wr)
     struct mk_list *wr_list;
 
     /* Get thread data */
-    wr_list = (struct mk_list *) pthread_getspecific(_mkp_data);
+    wr_list = (struct mk_list *) pthread_getspecific(websocket_request_list.key);
 
     /* Add node to list */
     mk_list_add(&wr->_head, wr_list);
 
     /* Update thread key */
-    pthread_setspecific(_mkp_data, wr_list);
+    pthread_setspecific(websocket_request_list.key, wr_list);
 }
 
 /* 
@@ -69,7 +70,7 @@ struct mk_ws_request *mk_ws_request_get(int socket_fd)
     struct mk_list *wr_list, *wr_head;
 
     /* Get thread data */
-    wr_list = pthread_getspecific(_mkp_data);
+    wr_list = pthread_getspecific(websocket_request_list.key);
 
     /* No connection previously was found */
     if(mk_list_is_empty(wr_list) == 0) {
@@ -91,7 +92,7 @@ void mk_ws_request_update(int socket, struct mk_ws_request *wr)
     struct mk_ws_request *wr_node;
     struct mk_list *wr_list, *wr_head;
 
-    wr_list = pthread_getspecific(_mkp_data);
+    wr_list = pthread_getspecific(websocket_request_list.key);
     if (mk_list_is_empty(wr_list) == 0) {
         return;
     }
@@ -100,7 +101,7 @@ void mk_ws_request_update(int socket, struct mk_ws_request *wr)
         wr_node = mk_list_entry(wr_head, struct mk_ws_request, _head);
         if (wr_node->socket_fd == socket) {
             /* Update data */
-            pthread_setspecific(_mkp_data, wr_list);
+            pthread_setspecific(websocket_request_list.key, wr_list);
             return;
             }
     }
@@ -117,7 +118,7 @@ int mk_ws_request_delete(int socket)
 
     PLUGIN_TRACE("[FD %i] remove request from list", socket);
 
-    wr_list = pthread_getspecific(_mkp_data);
+    wr_list = pthread_getspecific(websocket_request_list.key);
     if (mk_list_is_empty(wr_list) == 0) {
         return -1;
     }
@@ -128,7 +129,7 @@ int mk_ws_request_delete(int socket)
         if (wr_node->socket_fd == socket) {
             mk_list_del(wr_head);
             monkey->mem_free(wr_node);
-            pthread_setspecific(_mkp_data, wr_list);
+            pthread_setspecific(websocket_request_list.key, wr_list);
             return 0;
         }
     }
@@ -138,13 +139,14 @@ int mk_ws_request_delete(int socket)
 
 /*
  * Initialize the index list for palm_request and then set the
- * list HEAD to the thread key _mkp_data.
+ * list HEAD to the thread key websocket_request_list.key.
  */
-void mk_ws_request_init()
+void *mk_ws_request_init()
 {
     struct mk_list *ws_request_list;
 
     ws_request_list = monkey->mem_alloc(sizeof(struct mk_list));
     mk_list_init(ws_request_list);
-    pthread_setspecific(_mkp_data, ws_request_list);
+    //pthread_setspecific(websocket_request_list.key, ws_request_list);
+    return ws_request_list;
 }

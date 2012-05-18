@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include "webservice.h"
 
+duda_global_t websocket_request_list;
 
 /* GUID is defined by websockets v10 */
 #define WS_GUID                    "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -79,7 +80,7 @@ int ws_send_data(int sockfd,
                 unsigned char *frame_masking_key,
                 unsigned char *payload_data);
 
-void ws_init(struct duda_api_objects *);
+void ws_init(struct duda_api_objects *, struct mk_list *);
 uint64_t ws_read_data(int sockfd, unsigned char **data);
 void ws_end_request(int sockfd);
 int ws_handle_request(struct plugin *plugin, struct client_session *cs, 
@@ -105,4 +106,5 @@ struct duda_api_websocket {
 
 typedef struct duda_api_websocket websocket_object_t;
 websocket_object_t *websocket;
+
 #endif

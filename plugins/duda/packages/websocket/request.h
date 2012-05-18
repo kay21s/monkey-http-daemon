@@ -39,7 +39,7 @@ struct mk_ws_request
     struct mk_list _head;
 };
 
-void mk_ws_request_init();
+void *mk_ws_request_init();
 struct mk_ws_request *mk_ws_request_create(int socket_fd,
                                            struct client_session *cs,
                                            struct session_request *sr);
